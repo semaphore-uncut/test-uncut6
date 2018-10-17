@@ -8,12 +8,19 @@ agent:
 blocks:
   - name: "Build"
     task:
-      env_vars:
-        - name: APP_ENV
-          value: prod
       jobs:
       - name: Docker build
         commands:
           - checkout
+          - cache restore gems-$(checksum Gemfile.lock)
           - bundle install -j 4 --path vendor/bundle
           - cache store gems-$(checksum Gemfile.lock) vendor/bundle
+
+  - name: "Test"
+    task:
+      jobs:
+      - name: Docker build
+        commands:
+          - checkout
+          - cache restore gems-$(checksum Gemfile.lock)
+          - bundle install -j 4 --path vendor/bundle
